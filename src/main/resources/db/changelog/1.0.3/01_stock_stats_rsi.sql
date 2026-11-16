@@ -1,0 +1,3 @@
+ALTER TABLE nse.stock_stats
+    ADD COLUMN rsi14 NUMERIC(18,8),
+    ADD COLUMN rsi7 NUMERIC(18,8);
