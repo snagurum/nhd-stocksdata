@@ -14,8 +14,16 @@ CREATE TABLE IF NOT EXISTS nse.momentum_z_stats_score (
 );
 
 
-ALTER TABLE nse.momentum_z_stats_score
-ADD CONSTRAINT mzss_unique_tickerlist_date_ticker UNIQUE (ticker_list_name, price_date,ticker);
+DO '
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_constraint
+        WHERE conrelid = ''nse.momentum_z_stats_score''::regclass
+          AND conname = ''mzss_unique_tickerlist_date_ticker''
+    ) THEN
+        ALTER TABLE nse.momentum_z_stats_score ADD CONSTRAINT mzss_unique_tickerlist_date_ticker UNIQUE (ticker_list_name, price_date,ticker);
+    END IF;
+END;';
 
 CREATE INDEX IF NOT EXISTS idx_momentum_z_stats_score_ticker_date
 ON nse.momentum_z_stats_score (ticker_list_name, price_date, ticker);

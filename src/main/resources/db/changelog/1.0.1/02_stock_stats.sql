@@ -11,8 +11,16 @@ CREATE TABLE IF NOT EXISTS nse.stock_stats (
 );
 
 
-ALTER TABLE nse.stock_stats
-ADD CONSTRAINT ss_unique_ticker_date UNIQUE (ticker, price_date);
+DO '
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_constraint
+        WHERE conrelid = ''nse.stock_stats''::regclass
+          AND conname = ''ss_unique_ticker_date''
+    ) THEN
+        ALTER TABLE nse.stock_stats ADD CONSTRAINT ss_unique_ticker_date UNIQUE (ticker, price_date);
+    END IF;
+END;';
 
 CREATE INDEX IF NOT EXISTS idx_stock_stats_ticker_date
 ON nse.stock_stats (ticker, price_date);

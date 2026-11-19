@@ -24,8 +24,16 @@ CREATE TABLE IF NOT EXISTS nse.momentum_stats (
 );
 
 
-ALTER TABLE nse.momentum_stats
-ADD CONSTRAINT ms_unique_ticker_date UNIQUE (ticker, price_date);
+DO '
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_constraint
+        WHERE conrelid = ''nse.momentum_stats''::regclass
+          AND conname = ''ms_unique_ticker_date''
+    ) THEN
+        ALTER TABLE nse.momentum_stats ADD CONSTRAINT ms_unique_ticker_date UNIQUE (ticker, price_date);
+    END IF;
+END;';
 
 CREATE INDEX IF NOT EXISTS idx_momentum_stats_ticker_date
 ON nse.momentum_stats (ticker, price_date);

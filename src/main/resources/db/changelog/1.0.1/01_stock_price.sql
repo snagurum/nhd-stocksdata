@@ -1,3 +1,5 @@
+create schema if not exists nse;
+
 create table IF NOT EXISTS nse.STOCK(
     id                integer primary key generated always as identity,
     ticker           varchar(50),        -- SYMBOL
@@ -36,8 +38,16 @@ CREATE TABLE IF NOT EXISTS nse.stock_price (
     ffmc             BIGINT
 );
 
-ALTER TABLE nse.stock_price 
-ADD CONSTRAINT unique_ticker_date UNIQUE (ticker, price_date);
+DO '
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_constraint
+        WHERE conrelid = ''nse.stock_price''::regclass
+          AND conname = ''unique_ticker_date''
+    ) THEN
+        ALTER TABLE nse.stock_price ADD CONSTRAINT unique_ticker_date UNIQUE (ticker, price_date);
+    END IF;
+END;';
 
 CREATE INDEX IF NOT EXISTS idx_stock_price_ticker_date
 ON nse.stock_price (ticker, price_date);
